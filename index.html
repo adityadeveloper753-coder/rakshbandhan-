@@ -380,7 +380,7 @@
             sisters: [
                 {
                     name: "Ashiki",
-                    password: "ASHiki198", // Password protection
+                    password: "Ashiki198", // Password protection
                     icon: "fa-bolt", 
                     iconColor: "text-purple-400",
                     themeColor: "from-pink-400 to-purple-400",
@@ -467,16 +467,16 @@
                     images: sharedImages
                 },
                 {
-                    name: "Anjali",
-                    password: "ANJALI123", // Password protection
-                    icon: "fa-heart",
-                    iconColor: "text-red-400",
+                    name: "Anjali Bua",
+                    password: "Anjali143", // Password protection
+                    icon: "✨",
+                    iconColor: "text-yellow-400",
                     themeColor: "from-red-400 to-pink-400",
                     
-                    subtitle: "Rakhi ka din hai… Bua ko wish karna toh banta hai 😂❤️",
-                    openSubtitle: "For my special Bua ❤️",
+                    subtitle: "Rakhi ka din hai… Bua ko wish karna toh banta hai 😂✨",
+                    openSubtitle: "For my special Bua ✨",
                     
-                    memoriesHeader: "Family Memories ❤️",
+                    memoriesHeader: "Family Memories ✨",
                     memoriesSub: "Moments that make family special...",
                     memories: [
                         { icon: "🏡", text: "All the warmth at our family gatherings." },
@@ -487,10 +487,10 @@
                     
                     messagesHeader: "For You, Bua",
                     messages: [
-                        "Happy Raksha Bandhan, Bua! ❤️",
+                        "Happy Raksha Bandhan, Bua! ✨",
                         "Family mein Bua ka apna hi special place hota hai 😊",
                         "Thank you for always being so caring and supportive.",
-                        "Aap hamesha khush raho aur aise hi smile karti raho! ❤️"
+                        "Aap hamesha khush raho aur aise hi smile karti raho! ✨"
                     ],
 
                     quiz: [
@@ -504,10 +504,10 @@
                         { q: "Who is always ready to defend me from parents' scolding?", options: ["Myself", "Nobody", "Bua", "Ghost"], correct: 2 }
                     ],
                     
-                    rakhiMessage: "\"Rishte alag-alag hote hain, lekin kuch log family ko aur special bana dete hain. ❤️\"",
-                    endingMessage: "Happy Raksha Bandhan, Anjali Bua! ❤️",
+                    rakhiMessage: "\"Rishte alag-alag hote hain, lekin kuch log family ko aur special bana dete hain. ✨\"",
+                    endingMessage: "Happy Raksha Bandhan, Anjali Bua! ✨",
                     endingSub: "Thank you for always being a wonderful part of our family. 😊",
-                    secretMessage: "Bua, aapne 'Don't Click 😈' bhi click kar diya? 😂❤️ Happy Rakhi!",
+                    secretMessage: "Bua, aapne 'Don't Click 😈' bhi click kar diya? 😂✨ Happy Rakhi!",
                     images: sharedImages
                 }
             ]
@@ -533,14 +533,18 @@
             createParticles();
             
             const grid = document.getElementById('sisters-grid');
-            grid.innerHTML = CONFIG.sisters.map((sister, index) => `
+            grid.innerHTML = CONFIG.sisters.map((sister, index) => {
+                const iconContent = sister.icon.startsWith('fa-') 
+                    ? `<i class="fas ${sister.icon} text-3xl md:text-4xl ${sister.iconColor}"></i>` 
+                    : `<span class="text-3xl md:text-4xl ${sister.iconColor}">${sister.icon}</span>`;
+                return `
                 <div onclick="selectSister(${index})" class="glass-card p-6 md:p-8 rounded-2xl cursor-pointer transform transition hover:scale-105 text-center group border border-transparent hover:border-pink-500/30">
                     <div class="w-20 h-20 md:w-24 md:h-24 mx-auto rounded-full overflow-hidden mb-4 border-2 border-white/10 group-hover:border-pink-400 transition-colors flex items-center justify-center bg-white/5">
-                        <i class="fas ${sister.icon} text-3xl md:text-4xl ${sister.iconColor}"></i>
+                        ${iconContent}
                     </div>
                     <h3 class="text-2xl md:text-3xl font-serif text-white group-hover:text-pink-300 transition-colors">${sister.name}</h3>
                 </div>
-            `).join('');
+            `}).join('');
 
             document.getElementById('password-input').addEventListener('keypress', function (e) {
                 if (e.key === 'Enter') checkPassword();
