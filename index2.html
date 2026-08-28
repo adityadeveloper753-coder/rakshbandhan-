@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Happy Raksha Bandhan ❤️</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-glow: rgba(236, 72, 153, 0.5);
+            --bg-color: #0f0c29;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            background-attachment: fixed;
+            color: white;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        h1, h2, h3, .font-serif {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Glassmorphism Utilities */
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card {
+            background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(236, 72, 153, 0.5);
+            border-radius: 10px;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(1deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 15px var(--primary-glow); }
+            50% { box-shadow: 0 0 30px var(--primary-glow), 0 0 10px rgba(255,255,255,0.5); }
+            100% { box-shadow: 0 0 15px var(--primary-glow); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        @keyframes heartBeat {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.3); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.3); }
+            70% { transform: scale(1); }
+        }
+
+        .animate-float { animation: float 4s ease-in-out infinite; }
+        .animate-glow { animation: pulse-glow 2s infinite; }
+        .animate-shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        .animate-heartbeat { animation: heartBeat 1.5s infinite; }
+
+        /* Scroll Reveal System */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Particles Canvas */
+        #particles-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Gift Animation */
+        .gift-lid {
+            transition: transform 1s ease-in-out, opacity 1s;
+            transform-origin: bottom center;
+        }
+        .gift-box.open .gift-lid {
+            transform: translateY(-50px) rotate(-15deg);
+            opacity: 0;
+        }
+        
+        /* Navigation Hamburger */
+        .hamburger-line {
+            transition: all 0.3s ease;
+        }
+        .nav-open .hamburger-line:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+        .nav-open .hamburger-line:nth-child(2) { opacity: 0; }
+        .nav-open .hamburger-line:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+        
+        /* Image hover effects */
+        .img-hover-zoom {
+            overflow: hidden;
+            border-radius: 1rem;
+            background-color: rgba(255,255,255,0.05); /* Placeholder background */
+        }
+        .img-hover-zoom img {
+            transition: transform 0.5s ease;
+        }
+        .img-hover-zoom:hover img {
+            transform: scale(1.08);
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-pink-500 selection:text-white">
+
+    <canvas id="particles-bg"></canvas>
+    <div id="progress-bar" class="fixed top-0 left-0 h-1 bg-gradient-to-r from-pink-500 to-purple-500 z-50 w-0 transition-all duration-150"></div>
+
+    <!-- Music Toggle Button -->
+    <button id="music-btn" onclick="toggleMusic()" class="fixed bottom-6 right-6 z-50 glass p-4 rounded-full shadow-lg hover:scale-110 transition flex items-center justify-center text-xl text-pink-300">
+        <i class="fas fa-music"></i>
+    </button>
+    <audio id="bg-music" loop preload="auto">
+        <source src="raksha-bandhan.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Selection Screen (First View) -->
+    <div id="view-select" class="min-h-screen flex flex-col items-center justify-center p-6 relative z-10 transition-opacity duration-1000">
+        <h1 class="text-3xl md:text-5xl text-center font-serif text-transparent bg-clip-text bg-gradient-to-r from-pink-300 to-purple-300 mb-4">Who is this surprise for? ❤️</h1>
+        <p class="text-gray-300 mb-10 text-center text-sm md:text-base">Select your profile...</p>
+        
+        <div id="sisters-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
+            <!-- Dynamically Populated by JS -->
+        </div>
+    </div>
+
+    <!-- Password Screen (Second View) - perfectly centered -->
+    <div id="view-password" class="hidden min-h-screen w-full flex items-center justify-center p-6 relative z-10 opacity-0 transition-opacity duration-1000">
+        <div class="glass-card p-8 md:p-10 rounded-3xl max-w-md w-full text-center shadow-2xl relative overflow-hidden border border-pink-500/30">
+            <div class="absolute -top-10 -left-10 text-9xl opacity-5 text-pink-500"><i class="fas fa-lock"></i></div>
+            
+            <div class="text-4xl md:text-5xl mb-6 animate-float">🔐</div>
+            <h2 class="text-2xl font-serif text-white mb-2">This surprise is private...</h2>
+            <p class="text-gray-300 mb-8 text-sm md:text-base">Enter your password to continue</p>
+            
+            <div class="flex flex-col gap-4 relative z-10">
+                <input type="password" id="password-input" placeholder="Enter password" class="w-full bg-black/20 border border-white/20 rounded-xl px-4 py-3 text-center text-white focus:outline-none focus:border-pink-500 transition placeholder-gray-500 font-bold tracking-widest">
+                <p id="password-error" class="text-red-400 text-sm h-4 opacity-0 transition-opacity">Oops! Wrong password 😂 Try again.</p>
+                
+                <button onclick="checkPassword()" class="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold py-3 rounded-xl shadow-lg transition-transform hover:scale-[1.02] active:scale-95">
+                    Unlock Surprise ❤️
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Opening Intro Screen (Third View) -->
+    <div id="view-open" class="hidden min-h-screen flex-col items-center justify-center p-6 relative z-10 opacity-0 transition-opacity duration-1000">
+        <div class="text-center space-y-6">
+            <h2 id="open-subtitle" class="text-xl md:text-3xl font-serif text-pink-200">A little surprise...</h2>
+            <h1 class="text-4xl md:text-6xl font-serif text-white font-bold">Wishing You a Happy Raksha Bandhan,<br> <span id="open-sister-name" class="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">Sister</span> ❤️</h1>
+            
+            <div class="pt-12">
+                <button onclick="startJourney()" class="group relative px-8 py-4 bg-white/10 backdrop-blur-sm border border-pink-500/50 rounded-full text-lg font-semibold overflow-hidden transition-all hover:scale-105 animate-glow">
+                    <div class="absolute inset-0 bg-gradient-to-r from-pink-500 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <span class="relative z-10 flex items-center gap-2">Open Your Surprise <i class="fas fa-gift"></i></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Website (Fourth View) -->
+    <div id="view-main" class="hidden relative z-10 opacity-0 transition-opacity duration-1000">
+        
+        <!-- Navigation -->
+        <nav class="fixed top-4 inset-x-0 z-40 px-4 md:px-8 pointer-events-none flex justify-between items-center">
+            <div class="font-serif text-xl font-bold text-pink-300 drop-shadow-md pointer-events-auto">Rakhi Surprise</div>
+            <button id="nav-toggle" onclick="toggleNav()" class="glass p-3 rounded-full pointer-events-auto z-50">
+                <div class="w-6 h-0.5 bg-white mb-1.5 hamburger-line"></div>
+                <div class="w-6 h-0.5 bg-white mb-1.5 hamburger-line"></div>
+                <div class="w-6 h-0.5 bg-white hamburger-line"></div>
+            </button>
+        </nav>
+
+        <!-- Fullscreen Menu -->
+        <div id="nav-menu" class="fixed inset-0 bg-[#0f0c29]/95 backdrop-blur-xl z-30 opacity-0 pointer-events-none transition-opacity duration-500 flex flex-col items-center justify-center space-y-8 text-2xl font-serif">
+            <a href="#home" onclick="toggleNav()" class="nav-link hover:text-pink-400 transition">Home</a>
+            <a href="#memories" onclick="toggleNav()" class="nav-link hover:text-pink-400 transition">Moments</a>
+            <a href="#gallery" onclick="toggleNav()" class="nav-link hover:text-pink-400 transition">Gallery</a>
+            <a href="#messages" onclick="toggleNav()" class="nav-link hover:text-pink-400 transition">Messages</a>
+            <a href="#quiz" onclick="toggleNav()" class="nav-link hover:text-pink-400 transition">Quiz</a>
+            <a href="#rakhi" onclick="toggleNav()" class="nav-link hover:text-pink-400 transition">Rakhi</a>
+            <a href="#gift" onclick="toggleNav()" class="nav-link hover:text-pink-400 transition">Surprise</a>
+        </div>
+
+        <section id="home" class="min-h-screen flex flex-col items-center justify-center p-6 pt-20 text-center">
+            <div class="glass-card p-8 md:p-12 rounded-3xl max-w-3xl w-full reveal">
+                <h1 class="text-4xl md:text-6xl font-serif mb-4">Wishing You a Happy Raksha Bandhan, <br><span id="greet-name" class="text-pink-400"></span> ❤️</h1>
+                <p id="greet-subtitle" class="text-lg md:text-xl text-gray-300 italic mb-8"></p>
+                <div class="animate-float">
+                    <i class="fas fa-chevron-down text-3xl text-pink-500 opacity-70"></i>
+                </div>
+            </div>
+        </section>
+
+        <section id="memories" class="min-h-screen py-20 px-4 md:px-10 flex flex-col items-center justify-center">
+            <div class="text-center mb-12 reveal">
+                <h2 id="memories-title" class="text-3xl md:text-5xl font-serif text-pink-300 mb-2">Little Moments</h2>
+                <p id="memories-sub" class="text-gray-400"></p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl w-full" id="memory-gallery">
+                <!-- Dynamically populated by JS -->
+            </div>
+        </section>
+
+        <!-- Image Gallery Section -->
+        <section id="gallery" class="py-20 px-6 flex flex-col items-center min-h-[70vh]">
+            <h2 class="text-3xl md:text-4xl font-serif text-center mb-16 text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-pink-300 reveal">Beautiful Moments</h2>
+            <div id="image-gallery-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl w-full">
+                <!-- High Quality Images Injected Here -->
+            </div>
+        </section>
+
+        <section id="messages" class="py-20 px-6 flex flex-col items-center">
+            <h2 id="messages-title" class="text-3xl md:text-4xl font-serif text-center mb-16 text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-pink-300 reveal">Messages</h2>
+            
+            <div id="messages-container" class="space-y-12 max-w-3xl w-full">
+                <!-- Dynamically populated by JS -->
+            </div>
+        </section>
+
+        <section id="quiz" class="min-h-screen py-20 px-4 flex flex-col items-center justify-center bg-white/5">
+            <div class="glass-card p-6 md:p-10 rounded-3xl max-w-2xl w-full reveal text-center relative overflow-hidden shadow-2xl">
+                <h2 class="text-2xl md:text-4xl font-serif text-pink-300 mb-2">Quick Quiz!</h2>
+                <p class="text-gray-400 mb-8">Let's see if you get this right 😏</p>
+                
+                <div id="quiz-container" class="min-h-[280px] flex flex-col justify-center">
+                    <!-- Quiz Content dynamically injected -->
+                </div>
+                
+                <div id="quiz-toast" class="absolute top-4 left-1/2 -translate-x-1/2 bg-red-500/90 text-white px-6 py-2 rounded-full font-bold opacity-0 transition-opacity pointer-events-none shadow-lg">
+                    Wrong answer 😂 Try again!
+                </div>
+            </div>
+        </section>
+
+        <section id="rakhi" class="min-h-screen py-20 px-6 flex flex-col items-center justify-center relative">
+            <div class="text-center z-10 w-full max-w-2xl">
+                <!-- Glowing Rakhi SVG Art -->
+                <div class="relative w-48 h-48 mx-auto mb-12 animate-float reveal">
+                    <div class="absolute inset-0 bg-pink-500 rounded-full filter blur-xl opacity-30 animate-glow"></div>
+                    <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-2xl">
+                        <!-- Thread -->
+                        <path d="M 0 50 Q 25 40 50 50 T 100 50" fill="transparent" stroke="#ff4d4d" stroke-width="3" />
+                        <path d="M 0 52 Q 25 42 50 52 T 100 52" fill="transparent" stroke="#ffd700" stroke-width="1.5" />
+                        <!-- Center piece -->
+                        <circle cx="50" cy="50" r="20" fill="#800080" stroke="#ffd700" stroke-width="3"/>
+                        <circle cx="50" cy="50" r="14" fill="#ff1a75" />
+                        <circle cx="50" cy="50" r="8" fill="#ffd700" />
+                        <path d="M 50 30 L 50 70 M 30 50 L 70 50 M 36 36 L 64 64 M 36 64 L 64 36" stroke="#ffd700" stroke-width="2" />
+                        <!-- Beads -->
+                        <circle cx="25" cy="45" r="4" fill="#ffd700" />
+                        <circle cx="75" cy="55" r="4" fill="#ffd700" />
+                    </svg>
+                </div>
+                
+                <p id="rakhi-message" class="text-xl md:text-2xl text-gray-300 italic reveal" style="transition-delay: 300ms;">
+                    <!-- Dynamically populated -->
+                </p>
+            </div>
+        </section>
+
+        <section id="gift" class="min-h-screen py-20 px-6 flex flex-col items-center justify-center">
+            <div class="text-center reveal max-w-xl w-full">
+                <h2 class="text-3xl md:text-4xl font-serif mb-4 text-purple-300">One last surprise...</h2>
+                <p class="text-gray-400 mb-12">Click to open your gift 🎁</p>
+                
+                <div class="relative w-64 h-64 mx-auto mb-10 cursor-pointer group gift-box" id="the-gift" onclick="openGift()">
+                    <div class="absolute inset-0 bg-pink-500 rounded-full filter blur-2xl opacity-0 group-hover:opacity-40 transition-opacity duration-500"></div>
+                    <svg viewBox="0 0 100 100" class="w-full h-full relative z-10 drop-shadow-2xl">
+                        <!-- Box Base -->
+                        <rect x="20" y="40" width="60" height="50" fill="#e91e63" rx="5" />
+                        <rect x="45" y="40" width="10" height="50" fill="#fbc02d" />
+                        <!-- Box Lid -->
+                        <g class="gift-lid">
+                            <rect x="15" y="30" width="70" height="15" fill="#c2185b" rx="3" />
+                            <rect x="45" y="30" width="10" height="15" fill="#fbc02d" />
+                            <path d="M 50 30 Q 30 10 40 30" fill="none" stroke="#fbc02d" stroke-width="5" stroke-linecap="round" />
+                            <path d="M 50 30 Q 70 10 60 30" fill="none" stroke="#fbc02d" stroke-width="5" stroke-linecap="round" />
+                        </g>
+                    </svg>
+                    
+                    <button class="mt-8 px-6 py-3 bg-pink-500 hover:bg-pink-600 rounded-full text-white font-bold transition shadow-lg w-full">
+                        Open The Gift 🎁
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="ending" class="min-h-screen py-20 px-6 flex flex-col items-center justify-center hidden opacity-0 transition-opacity duration-1000">
+            <div class="text-center max-w-3xl glass p-8 md:p-16 rounded-3xl reveal border border-pink-500/30 relative overflow-hidden">
+                <div class="absolute -top-10 -left-10 text-9xl opacity-5 text-pink-500"><i class="fas fa-star"></i></div>
+                <div class="absolute -bottom-10 -right-10 text-9xl opacity-5 text-purple-500"><i class="fas fa-star"></i></div>
+                
+                <h1 id="ending-message" class="text-3xl md:text-5xl font-serif text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 font-bold mb-4 animate-pulse">
+                    Happy Raksha Bandhan! ❤️
+                </h1>
+                
+                <p id="ending-sub" class="text-gray-300 text-lg md:text-xl"></p>
+                
+                <div class="mt-12 text-6xl text-pink-500 animate-heartbeat inline-block">
+                    <i class="fas fa-heart"></i>
+                </div>
+            </div>
+
+            <div class="mt-32 text-center reveal">
+                <button onclick="triggerSecret()" class="text-gray-400 hover:text-white hover:bg-white/10 px-4 py-2 rounded-lg transition border border-transparent hover:border-white/20">
+                    Don't Click 😈
+                </button>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Secret Modal -->
+    <div id="secret-modal" class="fixed inset-0 z-50 bg-black/80 hidden items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="glass-card p-8 rounded-3xl max-w-sm w-full text-center transform scale-95 transition-transform duration-300" id="secret-modal-content">
+            <div class="text-5xl mb-4 text-yellow-400 animate-float">✨</div>
+            <h3 class="text-2xl font-serif text-white mb-2">Hey!</h3>
+            <p id="secret-msg-text" class="text-gray-300 mb-6"></p>
+            <button onclick="closeSecret()" class="px-6 py-2 bg-pink-500 rounded-full text-white font-bold hover:bg-pink-600 transition">Close</button>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * ==========================================
+         * CONFIGURATION
+         * ==========================================
+         */
+        
+        // Aapki di hui pehli image aur baaki 5 high-quality premium images
+       const sharedImages = [
+    "photo1.avif",
+    "photo2.jpg",
+    "photo3.jpg",
+    "photo4.jpg",
+    "photo5.jpg",
+    "photo6.jpg"
+];
+        const CONFIG = {
+            brotherName: "Your Brother", // Edit your name here
+            
+            sisters: [
+                {
+                    name: "Ashiqiue",
+                    password: "ASHiki198", // Password protection
+                    icon: "fa-bolt", 
+                    iconColor: "text-purple-400",
+                    themeColor: "from-pink-400 to-purple-400",
+                    
+                    subtitle: "Another Rakhi, another excuse to ask for a gift 😂",
+                    openSubtitle: "A little surprise...",
+                    
+                    memoriesHeader: "Little Moments 😂",
+                    memoriesSub: "Things that never change...",
+                    memories: [
+                        { icon: "📺", text: "The daily battle for the TV remote." },
+                        { icon: "🍕", text: "Maggi at 2 AM (mostly made by me)." },
+                        { icon: "🤫", text: "Covering up for each other's mistakes." },
+                        { icon: "🙄", text: "The classic 'Who started it?' drama." }
+                    ],
+                    
+                    messagesHeader: "Just saying...",
+                    messages: [
+                        "Happy Raksha Bandhan, Ashiqiue! ❤️",
+                        "You are seriously too good at annoying me 😂",
+                        "But fine, since it's Rakhi, I'll tolerate you today.",
+                        "Don't even think about asking for a huge gift."
+                    ],
+
+                    quiz: [
+                        { q: "Who has the highest chance of annoying the other for absolutely no reason?", options: ["Me (The brother)", "You (Obviously)", "It's a tie", "We never annoy each other"], correct: 1 },
+                        { q: "If someone orders pizza, who suddenly appears in the room first?", options: ["You", "Me", "Mom", "The delivery guy"], correct: 0 },
+                        { q: "Who usually wins the 'Who gets the TV remote' battle?", options: ["Me", "You because you complain", "Nobody, we just fight", "Dad takes it"], correct: 1 },
+                        { q: "If a glass breaks in the house, what is the default reaction?", options: ["Clean it up", "Blame you", "Blame me", "Run away"], correct: 1 },
+                        { q: "When the Rakhi is tied, what is the very next sentence?", options: ["Thank you brother", "Where is my gift?", "Let's eat sweets", "I love you"], correct: 1 },
+                        { q: "Who takes more time to get ready before a family function?", options: ["Me", "You", "Both", "We never get ready"], correct: 1 },
+                        { q: "If I say 'I have a secret', what is your reaction?", options: ["Don't care", "Tell me right now or else...", "I know it already", "Whatever"], correct: 1 },
+                        { q: "Honestly, who gets scolded more by parents?", options: ["Me, because of you", "You", "We are angels", "Equal distribution"], correct: 0 }
+                    ],
+                    
+                    rakhiMessage: "\"Fights are temporary... stealing my snacks is not forgiven 😑\"",
+                    endingMessage: "Happy Raksha Bandhan, Ashiqiue! ❤️",
+                    endingSub: "Okay, enough emotional stuff for today 😂",
+                    secretMessage: "Mujhe pata tha tu click karegi 😂 Happy Rakhi pagal!",
+                    images: sharedImages
+                },
+                {
+                    name: "Ankita",
+                    password: "ANKITA123", // Password protection
+                    icon: "fa-star",
+                    iconColor: "text-blue-400",
+                    themeColor: "from-blue-300 to-purple-300",
+                    
+                    subtitle: "A little Rakhi surprise for you 😊",
+                    openSubtitle: "For you...",
+                    
+                    memoriesHeader: "Little Moments 😊",
+                    memoriesSub: "Some good times...",
+                    memories: [
+                        { icon: "🏡", text: "Meeting up at family get-togethers." },
+                        { icon: "✨", text: "Good times when everyone meets." },
+                        { icon: "📱", text: "Sharing Rakhi wishes." },
+                        { icon: "🎉", text: "Mosi ke ghar wali family masti." }
+                    ],
+                    
+                    messagesHeader: "For You",
+                    messages: [
+                        "Happy Raksha Bandhan, My sister! ❤️",
+                        "Hope you have a really nice day! 😊",
+                        "Enjoy the celebrations with everyone!",
+                        "Have a great Rakhi!"
+                    ],
+
+                    quiz: [
+                        { q: "What is usually impossible to forget on Raksha Bandhan?", options: ["Tying the Rakhi", "The sweets", "Asking for a gift", "Taking photos"], correct: 2 },
+                        { q: "Which one is most likely to disappear first at a family celebration?", options: ["The food", "The kids", "The TV remote", "The sweets"], correct: 3 },
+                        { q: "What usually comes with a Rakhi?", options: ["A promise", "A gift (mandatory)", "Just blessings", "A handshake"], correct: 1 },
+                        { q: "What is the most dangerous question at a family gathering?", options: ["How are you?", "What's next in life?", "Did you eat?", "Where are you going?"], correct: 1 },
+                        { q: "Which sounds more realistic on Rakhi?", options: ["Just blessings are enough", "Where is my cash/gift?", "I don't need anything", "Let's share"], correct: 1 },
+                        { q: "What is almost guaranteed at a family get-together?", options: ["Absolute silence", "Too much food and noise", "Everyone sleeping", "Boring lectures"], correct: 1 },
+                        { q: "What makes Raksha Bandhan different from a normal day?", options: ["Nothing", "Sweets and Rakhi", "Brothers actually acting nice", "Waking up early"], correct: 2 },
+                        { q: "Is forgetting to wish your sibling on Rakhi a good idea?", options: ["Yes, very safe", "No, absolute disaster 😂", "Depends on the sibling", "Maybe"], correct: 1 }
+                    ],
+                    
+                    rakhiMessage: "\"Wishing you happiness and success always.\"",
+                    endingMessage: "Happy Raksha Bandhan, Ankita! ❤️",
+                    endingSub: "Have a great day! 😊",
+                    secretMessage: "Just a small prank! Hope you are having a good day! 🎈",
+                    images: sharedImages
+                },
+                {
+                    name: "Anjali",
+                    password: "ANJALI123", // Password protection
+                    icon: "fa-heart",
+                    iconColor: "text-red-400",
+                    themeColor: "from-red-400 to-pink-400",
+                    
+                    subtitle: "Rakhi ka din hai… Bua ko wish karna toh banta hai 😂❤️",
+                    openSubtitle: "For my special Bua ❤️",
+                    
+                    memoriesHeader: "Family Memories ❤️",
+                    memoriesSub: "Moments that make family special...",
+                    memories: [
+                        { icon: "🏡", text: "All the warmth at our family gatherings." },
+                        { icon: "😌", text: "Your caring and spot-on family advice." },
+                        { icon: "🍲", text: "Making sure everyone has eaten properly." },
+                        { icon: "✨", text: "Bringing that special Bua energy to every function!" }
+                    ],
+                    
+                    messagesHeader: "For You, Bua",
+                    messages: [
+                        "Happy Raksha Bandhan, Bua! ❤️",
+                        "Family mein Bua ka apna hi special place hota hai 😊",
+                        "Thank you for always being so caring and supportive.",
+                        "Aap hamesha khush raho aur aise hi smile karti raho! ❤️"
+                    ],
+
+                    quiz: [
+                        { q: "Who gives the best family advice?", options: ["Me", "Dad", "Bua", "Neighbors"], correct: 2 },
+                        { q: "Who is more likely to ask, 'Beta, padhai kaisi chal rahi hai?' 😂", options: ["My friends", "Bua", "The delivery guy", "Nobody"], correct: 1 },
+                        { q: "At a family function, who notices everything first?", options: ["The Kids", "Bua", "Me", "The Cat"], correct: 1 },
+                        { q: "Who is more likely to say 'Kuch kha lo beta'?", options: ["Doctor", "Bua", "Me", "Restaurant owner"], correct: 1 },
+                        { q: "Who knows the family gossip first? 😂", options: ["News Channel", "Me", "Kids", "Bua"], correct: 3 },
+                        { q: "What is Bua's secret superpower?", options: ["Invisibility", "Making everyone smile & caring for all", "Flying", "Laser eyes"], correct: 1 },
+                        { q: "What is the best thing about having a Bua?", options: ["Endless support and love", "Getting scolded", "Homework help", "Nothing"], correct: 0 },
+                        { q: "Who is always ready to defend me from parents' scolding?", options: ["Myself", "Nobody", "Bua", "Ghost"], correct: 2 }
+                    ],
+                    
+                    rakhiMessage: "\"Rishte alag-alag hote hain, lekin kuch log family ko aur special bana dete hain. ❤️\"",
+                    endingMessage: "Happy Raksha Bandhan, Anjali Bua! ❤️",
+                    endingSub: "Thank you for always being a wonderful part of our family. 😊",
+                    secretMessage: "Bua, aapne 'Don't Click 😈' bhi click kar diya? 😂❤️ Happy Rakhi!",
+                    images: sharedImages
+                }
+            ]
+        };
+
+        // Application State
+        let activeSister = null;
+        let currentQuizIndex = 0;
+        let isMusicPlaying = false;
+        let isNavOpen = false;
+
+        // DOM Elements
+        const viewSelect = document.getElementById('view-select');
+        const viewPassword = document.getElementById('view-password');
+        const viewOpen = document.getElementById('view-open');
+        const viewMain = document.getElementById('view-main');
+        const musicBtn = document.getElementById('music-btn');
+        const bgMusic = document.getElementById('bg-music');
+        const navMenu = document.getElementById('nav-menu');
+        const navToggle = document.getElementById('nav-toggle');
+
+        function init() {
+            createParticles();
+            
+            const grid = document.getElementById('sisters-grid');
+            grid.innerHTML = CONFIG.sisters.map((sister, index) => `
+                <div onclick="selectSister(${index})" class="glass-card p-6 md:p-8 rounded-2xl cursor-pointer transform transition hover:scale-105 text-center group border border-transparent hover:border-pink-500/30">
+                    <div class="w-20 h-20 md:w-24 md:h-24 mx-auto rounded-full overflow-hidden mb-4 border-2 border-white/10 group-hover:border-pink-400 transition-colors flex items-center justify-center bg-white/5">
+                        <i class="fas ${sister.icon} text-3xl md:text-4xl ${sister.iconColor}"></i>
+                    </div>
+                    <h3 class="text-2xl md:text-3xl font-serif text-white group-hover:text-pink-300 transition-colors">${sister.name}</h3>
+                </div>
+            `).join('');
+
+            document.getElementById('password-input').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') checkPassword();
+            });
+        }
+
+        function selectSister(index) {
+            activeSister = CONFIG.sisters[index];
+            
+            viewSelect.classList.add('opacity-0');
+            
+            setTimeout(() => {
+                viewSelect.classList.add('hidden'); 
+                
+                viewPassword.classList.remove('hidden');
+                document.getElementById('password-input').value = ""; 
+                document.getElementById('password-error').classList.add('opacity-0');
+                
+                void viewPassword.offsetWidth; 
+                viewPassword.classList.remove('opacity-0');
+            }, 800);
+        }
+
+        function checkPassword() {
+            const input = document.getElementById('password-input');
+            const errorMsg = document.getElementById('password-error');
+            
+            if (input.value === activeSister.password) {
+                errorMsg.classList.add('opacity-0');
+                unlockSurprise();
+            } else {
+                errorMsg.classList.remove('opacity-0');
+                input.classList.remove('border-white/20', 'focus:border-pink-500');
+                input.classList.add('border-red-500', 'animate-shake');
+                
+                setTimeout(() => {
+                    input.classList.remove('animate-shake');
+                    input.classList.remove('border-red-500');
+                    input.classList.add('border-white/20', 'focus:border-pink-500');
+                }, 500);
+            }
+        }
+
+        function unlockSurprise() {
+            viewPassword.classList.add('opacity-0');
+            
+            setTimeout(() => {
+                viewPassword.classList.add('hidden');
+                
+                document.getElementById('open-subtitle').innerText = activeSister.openSubtitle;
+                document.getElementById('open-sister-name').innerText = activeSister.name;
+                
+                document.getElementById('greet-name').innerText = activeSister.name;
+                document.getElementById('greet-subtitle').innerText = activeSister.subtitle;
+                
+                document.getElementById('memories-title').innerText = activeSister.memoriesHeader;
+                document.getElementById('memories-sub').innerText = activeSister.memoriesSub;
+                
+                document.getElementById('messages-title').innerText = activeSister.messagesHeader;
+                document.getElementById('rakhi-message').innerText = activeSister.rakhiMessage;
+                
+                document.getElementById('ending-message').innerText = activeSister.endingMessage;
+                document.getElementById('ending-sub').innerText = activeSister.endingSub;
+                document.getElementById('secret-msg-text').innerText = activeSister.secretMessage;
+
+                const openName = document.getElementById('open-sister-name');
+                openName.className = `text-transparent bg-clip-text bg-gradient-to-r ${activeSister.themeColor}`;
+                
+                const greetName = document.getElementById('greet-name');
+                greetName.className = `text-transparent bg-clip-text bg-gradient-to-r ${activeSister.themeColor}`;
+
+                viewOpen.classList.remove('hidden');
+                void viewOpen.offsetWidth; 
+                viewOpen.classList.remove('opacity-0');
+            }, 800);
+        }
+
+        function startJourney() {
+            bgMusic.volume = 0.35;
+            let playPromise = bgMusic.play();
+            if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                    isMusicPlaying = true;
+                    musicBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                }).catch(error => {
+                    console.log("Raksha Bandhan audio file not found. Please add audio/raksha-bandhan.mp3", error);
+                    isMusicPlaying = false;
+                    musicBtn.innerHTML = '<i class="fas fa-music"></i>';
+                });
+            }
+
+            viewOpen.classList.add('opacity-0');
+            
+            setTimeout(() => {
+                viewOpen.classList.add('hidden');
+                viewMain.classList.remove('hidden');
+                
+                initMainContent();
+                
+                setTimeout(() => {
+                    viewMain.classList.remove('opacity-0');
+                }, 100);
+            }, 800);
+        }
+
+        function toggleMusic() {
+            if (isMusicPlaying) {
+                bgMusic.pause();
+                musicBtn.innerHTML = '<i class="fas fa-music"></i>';
+                isMusicPlaying = false;
+            } else {
+                let playPromise = bgMusic.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(_ => {
+                        musicBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                        isMusicPlaying = true;
+                    }).catch(e => {
+                        console.log("Raksha Bandhan audio file not found.", e);
+                        isMusicPlaying = false;
+                        musicBtn.innerHTML = '<i class="fas fa-music"></i>';
+                    });
+                }
+            }
+        }
+
+        function toggleNav() {
+            isNavOpen = !isNavOpen;
+            if (isNavOpen) {
+                navToggle.classList.add('nav-open');
+                navMenu.classList.remove('opacity-0', 'pointer-events-none');
+            } else {
+                navToggle.classList.remove('nav-open');
+                navMenu.classList.add('opacity-0', 'pointer-events-none');
+            }
+        }
+
+        function initMainContent() {
+            const gallery = document.getElementById('memory-gallery');
+            gallery.innerHTML = activeSister.memories.map((m, i) => `
+                <div class="glass p-6 md:p-8 rounded-2xl reveal transform transition duration-300 hover:scale-105 hover:border-pink-500/50 hover:shadow-[0_0_20px_rgba(236,72,153,0.15)] text-center cursor-default" style="transition-delay: ${(i % 2) * 150}ms">
+                    <div class="text-4xl md:text-5xl mb-4 animate-float">${m.icon}</div>
+                    <p class="font-serif text-lg md:text-xl text-gray-200">${m.text}</p>
+                </div>
+            `).join('');
+            
+            const imageContainer = document.getElementById('image-gallery-container');
+            if(activeSister.images && activeSister.images.length > 0) {
+                imageContainer.innerHTML = activeSister.images.map((imgUrl, i) => `
+                    <div class="reveal glass-card p-2 rounded-2xl img-hover-zoom aspect-square md:aspect-auto h-64 md:h-80 shadow-lg border border-pink-500/20 flex items-center justify-center bg-white/5" style="transition-delay: ${i * 100}ms">
+                        <img src="${imgUrl}" alt="Raksha Bandhan Moment" loading="lazy" class="w-full h-full object-cover rounded-xl opacity-90 hover:opacity-100 transition-opacity">
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('gallery').classList.add('hidden'); 
+            }
+
+            const messagesContainer = document.getElementById('messages-container');
+            messagesContainer.innerHTML = activeSister.messages.map((msg, i) => {
+                const isEven = i % 2 === 0;
+                const borderClass = isEven ? 'border-l-4 border-pink-500' : 'border-r-4 border-purple-500 text-right';
+                return `
+                <div class="glass p-6 md:p-8 rounded-2xl reveal ${borderClass} transform transition hover:scale-105 shadow-md" style="transition-delay: ${i * 100}ms">
+                    <p class="text-xl md:text-2xl font-serif leading-relaxed">"${msg}"</p>
+                </div>
+                `;
+            }).join('');
+
+            currentQuizIndex = 0;
+            renderQuiz();
+
+            window.addEventListener('scroll', handleScrollEvents);
+            window.dispatchEvent(new Event('scroll'));
+        }
+
+        function handleScrollEvents() {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById('progress-bar').style.width = scrolled + '%';
+
+            const reveals = document.querySelectorAll('.reveal');
+            for (let i = 0; i < reveals.length; i++) {
+                const windowHeight = window.innerHeight;
+                const elementTop = reveals[i].getBoundingClientRect().top;
+                const elementVisible = 100;
+                if (elementTop < windowHeight - elementVisible) {
+                    reveals[i].classList.add('active');
+                }
+            }
+        }
+
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            
+            if (currentQuizIndex >= activeSister.quiz.length) {
+                container.innerHTML = `
+                    <div class="animate-float">
+                        <i class="fas fa-check-circle text-5xl text-green-400 mb-4"></i>
+                    </div>
+                    <h3 class="text-2xl md:text-3xl text-white font-serif mb-2">Okay... you actually know everything! 😂❤️</h3>
+                    <p class="text-gray-300 text-lg mt-4">Now go check your surprise 🎁</p>
+                `;
+                confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+                return;
+            }
+            
+            const q = activeSister.quiz[currentQuizIndex];
+            container.innerHTML = `
+                <div class="text-pink-400 text-sm font-bold mb-4 tracking-widest uppercase">Question ${currentQuizIndex + 1} of 8</div>
+                <h3 class="text-lg md:text-2xl mb-8 font-serif">${q.q}</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    ${q.options.map((opt, i) => `
+                        <button onclick="checkAnswer(${i}, ${q.correct})" class="glass px-4 py-4 rounded-xl hover:bg-pink-500/20 hover:border-pink-500 transition text-left relative overflow-hidden group">
+                            <span class="relative z-10 text-sm md:text-base">${opt}</span>
+                            <div class="absolute inset-0 bg-pink-500/10 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></div>
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function checkAnswer(selected, correct) {
+            if(selected === correct) {
+                confetti({ particleCount: 40, spread: 50, origin: { y: 0.8 }, colors: ['#ec4899', '#a855f7', '#ffffff'] });
+                currentQuizIndex++;
+                renderQuiz();
+            } else {
+                const toast = document.getElementById('quiz-toast');
+                const container = document.getElementById('quiz-container');
+                
+                container.classList.add('animate-shake');
+                setTimeout(() => container.classList.remove('animate-shake'), 500);
+                
+                toast.classList.remove('opacity-0', 'pointer-events-none');
+                setTimeout(() => {
+                    toast.classList.add('opacity-0', 'pointer-events-none');
+                }, 1500);
+            }
+        }
+
+        function openGift() {
+            const box = document.getElementById('the-gift');
+            if(box.classList.contains('open')) return;
+            
+            box.classList.add('open');
+            
+            var duration = 3 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
+            
+            function randomInRange(min, max) {
+              return Math.random() * (max - min) + min;
+            }
+            
+            var interval = setInterval(function() {
+              var timeLeft = animationEnd - Date.now();
+              if (timeLeft <= 0) return clearInterval(interval);
+              var particleCount = 50 * (timeLeft / duration);
+              confetti(Object.assign({}, defaults, { 
+                  particleCount, 
+                  origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+                  colors: ['#ff0000', '#ffd700', '#ff69b4', '#8a2be2']
+              }));
+              confetti(Object.assign({}, defaults, { 
+                  particleCount, 
+                  origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+                  colors: ['#ff0000', '#ffd700', '#ff69b4', '#8a2be2']
+              }));
+            }, 250);
+
+            setTimeout(() => {
+                const ending = document.getElementById('ending');
+                ending.classList.remove('hidden');
+                setTimeout(() => {
+                    ending.classList.remove('opacity-0');
+                    ending.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }, 1200);
+        }
+
+        function triggerSecret() {
+            const modal = document.getElementById('secret-modal');
+            const content = document.getElementById('secret-modal-content');
+            modal.classList.remove('hidden');
+            modal.style.display = 'flex';
+            
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+            
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        }
+
+        function closeSecret() {
+            const modal = document.getElementById('secret-modal');
+            const content = document.getElementById('secret-modal-content');
+            
+            modal.classList.add('opacity-0');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        function createParticles() {
+            const canvas = document.getElementById('particles-bg');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let particles = [];
+
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.size = Math.random() * 2 + 0.5;
+                    this.speedX = Math.random() * 0.5 - 0.25;
+                    this.speedY = Math.random() * 0.5 - 0.25;
+                    this.opacity = Math.random() * 0.5 + 0.1;
+                }
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    if (this.x > width) this.x = 0;
+                    if (this.x < 0) this.x = width;
+                    if (this.y > height) this.y = 0;
+                    if (this.y < 0) this.y = height;
+                }
+                draw() {
+                    ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            const particleCount = Math.min(window.innerWidth / 15, 80);
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        // Start App
+        window.onload = init;
+
+    </script>
+</body>
+</html>
